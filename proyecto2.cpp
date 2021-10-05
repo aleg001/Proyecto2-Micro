@@ -23,27 +23,22 @@
 
 // Se llaman las librerias a utilizar
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <iostream>
 #include <cstdlib>
 #include <pthread.h>
-#include <vector>
 
 using namespace std;
 
-int cantElementos = 20;
-
+const int cantElementos = 20; // Cantidad de elementos contenidos en lista, variar según cantidad de datos requeridos
 int CantidadThreads = 4;
 
 // Se define variable condicional de tipo pthread
-int Nums1[20] = {10, 13, 8, 9, 1, 4, 5, 2, 3, 6, 15, 20, 18, 17, 12, 11, 14, 19, 7, 16};
-
-// Arrays con numeros aleatorios
-int Nums2[20] = {47, 48, 49, 44, 45, 46, 55, 56, 57, 58, 59, 51, 52, 53, 54, 40, 41, 42, 43, 60};
-int Nums3[20] = {21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40};
-int Nums7[20] = {44, 45, 46, 47, 34, 35, 36, 41, 42, 43, 37, 38, 39, 40, 48, 49, 50, 31, 32, 33};
-int Nums[20] = {63, 64, 65, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 66, 67, 68, 69, 70, 61, 62};
+int Numss[cantElementos];
+// Se define la mutex a utilizar
+pthread_mutex_t bloqueado;
 
 pthread_cond_t lista_vacia = PTHREAD_COND_INITIALIZER;
 int cantThreads = (cantElementos + 1) / 2;
@@ -75,18 +70,31 @@ void ClasificacionNum(pthread_t threadsID[]);
 */
 void ObtencionNum(void)
 {
-	int num;
-	// Se le solicita al usuario que ingrese la cantidad de numeros
-	cout << "Indique la cantidad de numeros que desea clasificar: ";
-	cin >> n;
+	int valide = 0;
+	int numValidado = 0;
 
-	//n = 20;
-	cantElementos = n;
+	while ( valide == 1 ) {
+
+		// Se le solicita al usuario que ingrese la cantidad de numeros
+		cout << "Indique la cantidad de numeros que desea clasificar: ";
+		cin >> n;
+
+		try
+		{
+			numValidado = (int) n;
+			valide++;
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << e.what() << '\n';
+		}
+
+	}
 
 	// Ciclo for con la cantidad de elementos "n" definidos
-	for (int i = 0; i <= n; i++)
+	for (int i = 0; i <= numValidado; i++)
 	{
-		Nums[i] = 1 + (rand() % 100);
+		Numss[i] = 1 + (rand() % 100);
 	}
 }
 
@@ -106,17 +114,28 @@ int main(void)
 	long max = 0;
 
 	//ObtencionNum();
+	//int valide = 0;
+	int numValidado = 0;
+
+	// Ciclo for con la cantidad de elementos "n" definidos
+	for (int i = 0; i <= cantElementos; i++)
+	{
+		Numss[i] = 1 + (rand() % 100);
+	}
+	
+	// Inicialización de mutex
+	if (pthread_mutex_init(&bloqueado, NULL) != 0)
+    {
+        printf("\n mutex init failed\n");
+        return 1;
+    } 
 
 	int hilo = 1;
 	cout << endl
 		 << "---------------------- LISTA INICIAL ----------------------" << endl
 		 << endl;
 	for (int i = 0; i < cantElementos; i++) {
-		if (i == 0 || i == 5 || i == 10 || i == 15) {
-			cout << "\nHilo: " << hilo << endl;
-			hilo++;
-		}
-		cout << i << " -> " << Nums[i] << endl;
+		cout << i << " -> " << Numss[i] << endl;
 	}
 
     // Clasificación de números
@@ -173,14 +192,19 @@ int main(void)
 		 << "---------------------- LISTA ORDENADA ----------------------" << endl
 		 << endl;
 	for (int i = 0; i < cantElementos; i++) {
-		if (i == 0 || i == 5 || i == 10 || i == 15)
-		{
-			cout << "\nHilo: " << hilo << endl;
-			hilo++;
+		if (cantElementos == 20) {
+			if (i == 0 || i == 5 || i == 10 || i == 15)
+			{
+				cout << "\nHilo: " << hilo << endl;
+				hilo++;
+			}
 		}
 
-		cout << i << " -> " << Nums[i] << endl;
+		cout << i << " -> " << Numss[i] << endl;
 	}
+
+	// Destrucción de mutex
+	pthread_mutex_destroy(&bloqueado);
 
 	return 0;
 }
@@ -200,11 +224,11 @@ void Bubblesort(int max, int min)
 	{
 		for (int j = min; j <= max - 1; j++)
 		{
-			if (Nums[j] < Nums[j + 1])
+			if (Numss[j] < Numss[j + 1])
 			{ // Ordena el array de mayor a menor, cambiar el "<" a ">" para ordenar de menor a mayor
-				temporal = Nums[j];
-				Nums[j] = Nums[j + 1];
-				Nums[j + 1] = temporal;
+				temporal = Numss[j];
+				Numss[j] = Numss[j + 1];
+				Numss[j + 1] = temporal;
 			}
 		}
 	}
@@ -216,11 +240,13 @@ void *ComparacionNum(void *arg)
 	// Se define la variable de iteracion, con el valor de la variable temporal.
 	long i = (long)arg;
 
-	if (Nums[i] > Nums[i + 1])
+	if ( Numss[i] > Numss[i + 1] )
 	{ // Ordena el array de mayor a menor, cambiar el "<" a ">" para ordenar de menor a mayor
-		long temporal = Nums[i];
-		Nums[i] = Nums[i + 1];
-		Nums[i + 1] = temporal;
+		pthread_mutex_lock(&bloqueado); // bloqueo mutex
+		long temporal = Numss[i];
+		Numss[i] = Numss[i + 1];
+		Numss[i + 1] = temporal;
+		pthread_mutex_unlock(&bloqueado); // desbloqueo mutex
 	}
 
 	return NULL;
