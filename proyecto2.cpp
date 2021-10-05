@@ -32,7 +32,14 @@
 
 using namespace std;
 
-const int cantElementos = 20; // Cantidad de elementos contenidos en lista, variar según cantidad de datos requeridos
+/*
+Se define la cantidad de elementos contenidos en la lista.
+En caso se desee variar la cantidad para cumplir con los requerimientos,
+solo es necesario modificar el valor de elementos.
+*/
+const int cantElementos = 20; 
+
+// Se define la cantidad de hilos a implementar
 int CantidadThreads = 4;
 
 // Se define variable condicional de tipo pthread
@@ -40,6 +47,7 @@ int Numss[cantElementos];
 // Se define la mutex a utilizar
 pthread_mutex_t bloqueado;
 
+// Se define la variable condicional de pthread con la lista vacia
 pthread_cond_t lista_vacia = PTHREAD_COND_INITIALIZER;
 int cantThreads = (cantElementos + 1) / 2;
 long Valores[4];
@@ -56,6 +64,7 @@ struct parameters
 };
 
 // Declarar funciones vacias
+
 void ObtencionNum(void);
 void *ComparacionNum(void *arg);
 void Bubblesort(int max, int min);
@@ -79,6 +88,7 @@ void ObtencionNum(void)
 		cout << "Indique la cantidad de numeros que desea clasificar: ";
 		cin >> n;
 
+		// Se valida el ingreso, cumpliendo con los requerimientos de progra defensiva
 		try
 		{
 			numValidado = (int) n;
@@ -131,6 +141,7 @@ int main(void)
     } 
 
 	int hilo = 1;
+	// Impresion de la lista original, sin ordenar
 	cout << endl
 		 << "---------------------- LISTA INICIAL ----------------------" << endl
 		 << endl;
@@ -188,6 +199,7 @@ int main(void)
 	}
 
 	hilo = 1;
+	// Se imprime la lista ordenada segun el algoritmo implementado
 	cout << endl
 		 << "---------------------- LISTA ORDENADA ----------------------" << endl
 		 << endl;
@@ -242,6 +254,7 @@ void *ComparacionNum(void *arg)
 
 	if ( Numss[i] > Numss[i + 1] )
 	{ // Ordena el array de mayor a menor, cambiar el "<" a ">" para ordenar de menor a mayor
+	
 		pthread_mutex_lock(&bloqueado); // bloqueo mutex
 		long temporal = Numss[i];
 		Numss[i] = Numss[i + 1];
