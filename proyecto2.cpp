@@ -123,6 +123,7 @@ int main(void)
     pthread_t threadID[cantThreads];
 	int i = 0;
 	int j = 0;
+	int err;
 
 	for (i = 1; i <= cantElementos; i++) {
 
@@ -133,7 +134,12 @@ int main(void)
 			// Creacion de hilos
 			Variable_Temporal = 1;
 			for (j = 0; j < cantThreads - 1; j++) {
-				pthread_create(&threadID[j], NULL, ComparacionNum, (void *)Variable_Temporal);
+				err = pthread_create(&threadID[j], NULL, ComparacionNum, (void *)Variable_Temporal);
+				if (err != 0)
+                {
+                    printf("\nError al crear thread! \n");	//impresion de mensaje si el hilo no se crea correctamente
+                    return 0;
+                }
 				Variable_Temporal = Variable_Temporal + 2;
 			}
 
@@ -147,7 +153,12 @@ int main(void)
 			// Creacion de hilos
 			Variable_Temporal = 0;
 			for (j = 0; j < cantThreads; j++) {
-				pthread_create(&threadID[j], NULL, ComparacionNum, (void *)Variable_Temporal);
+				err = pthread_create(&threadID[j], NULL, ComparacionNum, (void *)Variable_Temporal);
+				if (err != 0)
+                {
+                    printf("\nError al crear thread! \n");	//impresion de mensaje si el hilo no se crea correctamente
+                    return 0;
+                }
 				Variable_Temporal = Variable_Temporal + 2;
 			}
 
