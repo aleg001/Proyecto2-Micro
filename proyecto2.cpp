@@ -22,6 +22,7 @@
 */
 
 // Se llaman las librerias a utilizar
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -142,6 +143,7 @@ int main(void)
 
 	int hilo = 1;
 	// Impresion de la lista original, sin ordenar
+
 	cout << endl
 		 << "---------------------- LISTA INICIAL ----------------------" << endl
 		 << endl;
@@ -160,7 +162,7 @@ int main(void)
 		// Verificar si i es par o impar
 		if (i % 2 == 0) {
 
-			// Es par
+			//----- Es par
 			// Creacion de hilos
 			Variable_Temporal = 1;
 			for (j = 0; j < cantThreads - 1; j++) {
@@ -179,7 +181,7 @@ int main(void)
 		}
 		if (i % 2 == 1) {
 
-			// Es impar
+			//----- Es impar
 			// Creacion de hilos
 			Variable_Temporal = 0;
 			for (j = 0; j < cantThreads; j++) {
@@ -254,7 +256,7 @@ void *ComparacionNum(void *arg)
 
 	if ( Numss[i] > Numss[i + 1] )
 	{ // Ordena el array de mayor a menor, cambiar el "<" a ">" para ordenar de menor a mayor
-	
+
 		pthread_mutex_lock(&bloqueado); // bloqueo mutex
 		long temporal = Numss[i];
 		Numss[i] = Numss[i + 1];
